@@ -35,7 +35,7 @@ class IntegrationConfiguration {
 			.from(this.eventsChannel())
 			.handle((GenericHandler<ApacheMinaFtpEvent>) (ftpEvent, messageHeaders) -> {
 				log.info("new " + ftpEvent.getClass().getName() + ":" + ftpEvent.getSession());
-				return ftpEvent;
+				return null;
 			})
 			.get();
 	}
