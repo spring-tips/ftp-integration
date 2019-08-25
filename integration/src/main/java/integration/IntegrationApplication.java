@@ -31,14 +31,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Map;
 
-@Log4j2
 @SpringBootApplication
 public class IntegrationApplication {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		SpringApplication.run(IntegrationApplication.class, args);
 	}
-
 }
 
 @Configuration
@@ -78,12 +76,6 @@ class DelegatingSessionFactoryOutboundFlowConfiguration {
 	}
 
 	@Bean
-	FtpRemoteFileTemplate template(DefaultFtpSessionFactory ftpSessionFactory) {
-		return new FtpRemoteFileTemplate(ftpSessionFactory);
-	}
-
-
-	@Bean
 	DelegatingSessionFactory<FTPFile> dsf(
 		@Qualifier(SF_GARY) DefaultFtpSessionFactory gary,
 		@Qualifier(SF_JOSH) DefaultFtpSessionFactory josh) {
@@ -100,8 +92,6 @@ class DelegatingSessionFactoryOutboundFlowConfiguration {
 		ftp.setUsername(username);
 		return ftp;
 	}
-
-
 
 	@Bean
 	@Qualifier(SF_GARY)
@@ -149,8 +139,9 @@ class FtpTemplate {
 	}
 
 	@Component
+	@Profile("template")
 	@RequiredArgsConstructor
-	static class Runner {
+	public static class Runner {
 
 		private final FtpRemoteFileTemplate ftpRemoteFileTemplate;
 
