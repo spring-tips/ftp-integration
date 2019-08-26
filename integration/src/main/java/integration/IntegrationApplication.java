@@ -24,12 +24,19 @@ import org.springframework.integration.ftp.dsl.Ftp;
 import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.web.servlet.function.HandlerFunction;
+import org.springframework.web.servlet.function.RouterFunction;
+import org.springframework.web.servlet.function.ServerRequest;
+import org.springframework.web.servlet.function.ServerResponse;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Map;
+
+import static org.springframework.web.servlet.function.RouterFunctions.route;
 
 @SpringBootApplication
 public class IntegrationApplication {
@@ -45,8 +52,26 @@ class DelegatingSessionFactoryOutboundFlowConfiguration {
 
 	private final static String HEADER_SESSION_FACTORY_KEY = "headerKey";
 	private final static String SF = "sessionFactory";
-	private final static String SF_JOSH = SF + "Josh";
-	private final static String SF_GARY = SF + "Gary";
+	private final static String SF_JOSH = SF + "josh";
+	private final static String SF_GARY = SF + "gary";
+
+	@Bean
+	RouterFunction<ServerResponse> httpRoutes() {
+		var channel = in();
+		var sessionFactoryNameParamName = "sfn";
+		return route()
+			.POST("/put/{" + sessionFactoryNameParamName + "}", request -> {
+				var sessionFactoryName = request.pathVariable(sessionFactoryNameParamName);
+				var msg = MessageBuilder
+					.withPayload("Hello, " + sessionFactoryName + "!")
+					.setHeaderIfAbsent(HEADER_SESSION_FACTORY_KEY, SF + (sessionFactoryName.toLowerCase()))
+					.build();
+				var sent = channel.send(msg);
+				Assert.isTrue(sent, "the message should've been published");
+				return ServerResponse.ok().build();
+			})
+			.build();
+	}
 
 	@Bean
 	MessageChannel in() {
@@ -59,20 +84,20 @@ class DelegatingSessionFactoryOutboundFlowConfiguration {
 	}
 
 	@Bean
-	IntegrationFlow integrationFlow(DelegatingSessionFactory<FTPFile> dsf) {
-		File file = FileUtils.createDesktopFolder("gateway");
+	IntegrationFlow ftpGatewayFlow(DelegatingSessionFactory<FTPFile> dsf) {
+		File file = FileUtils.createDesktopFolder("gateway"); // creates directory $HOME/Desktop/gateway
 		return f -> f
 			.channel(in())
 			.handle(message -> dsf.setThreadKey(message.getHeaders().get(HEADER_SESSION_FACTORY_KEY)))
 			.handle(
 				Ftp
-					.outboundGateway(dsf, AbstractRemoteFileOutboundGateway.Command.MGET, "payload")
+					.outboundGateway(dsf, AbstractRemoteFileOutboundGateway.Command.PUT, "payload")
 					.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
 					.fileExistsMode(FileExistsMode.IGNORE)
 					.localDirectory(file)
 			)
 			.handle(message -> dsf.clearThreadKey())
-			.channel(out());
+    	.channel(out());
 	}
 
 	@Bean
