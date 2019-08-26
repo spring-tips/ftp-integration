@@ -23,7 +23,10 @@ import org.springframework.integration.file.support.FileExistsMode;
 import org.springframework.integration.ftp.dsl.Ftp;
 import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
+import org.springframework.integration.handler.GenericHandler;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -35,6 +38,7 @@ import org.springframework.web.servlet.function.ServerResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Map;
+import java.util.function.Function;
 
 import static org.springframework.web.servlet.function.RouterFunctions.route;
 
@@ -88,7 +92,10 @@ class DelegatingSessionFactoryOutboundFlowConfiguration {
 		File file = FileUtils.createDesktopFolder("gateway"); // creates directory $HOME/Desktop/gateway
 		return f -> f
 			.channel(in())
-			.handle(message -> dsf.setThreadKey(message.getHeaders().get(HEADER_SESSION_FACTORY_KEY)))
+			.handle((GenericHandler<Object>) (payload, headers) -> {
+				dsf.setThreadKey(headers.get(HEADER_SESSION_FACTORY_KEY));
+				return payload;
+			})
 			.handle(
 				Ftp
 					.outboundGateway(dsf, AbstractRemoteFileOutboundGateway.Command.PUT, "payload")
@@ -96,8 +103,11 @@ class DelegatingSessionFactoryOutboundFlowConfiguration {
 					.fileExistsMode(FileExistsMode.IGNORE)
 					.localDirectory(file)
 			)
-			.handle(message -> dsf.clearThreadKey())
-    	.channel(out());
+			.handle((GenericHandler<Object>) (payload, headers) -> {
+				dsf.clearThreadKey();
+				return payload;
+			})
+			.channel(out());
 	}
 
 	@Bean
