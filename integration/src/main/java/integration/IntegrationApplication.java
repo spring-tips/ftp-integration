@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
+import org.springframework.expression.common.LiteralExpression;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.MessageChannels;
@@ -50,6 +51,7 @@ public class IntegrationApplication {
 	}
 }
 
+@Log4j2
 @Configuration
 @Profile("delegating-session-factory")
 class DelegatingSessionFactoryOutboundFlowConfiguration {
@@ -83,31 +85,32 @@ class DelegatingSessionFactoryOutboundFlowConfiguration {
 	}
 
 	@Bean
-	MessageChannel out() {
-		return MessageChannels.direct().get();
-	}
-
-	@Bean
-	IntegrationFlow ftpGatewayFlow(DelegatingSessionFactory<FTPFile> dsf) {
-		File file = FileUtils.createDesktopFolder("gateway"); // creates directory $HOME/Desktop/gateway
+	IntegrationFlow ftpGatewayFlow(FtpRemoteFileTemplate ftpRemoteFileTemplate,
+	                               DelegatingSessionFactory<FTPFile> dsf) {
 		return f -> f
 			.channel(in())
 			.handle((GenericHandler<Object>) (payload, headers) -> {
-				dsf.setThreadKey(headers.get(HEADER_SESSION_FACTORY_KEY));
-				return payload;
+				Object key = headers.get(HEADER_SESSION_FACTORY_KEY);
+				dsf.setThreadKey(key);
+				return key;
 			})
 			.handle(
 				Ftp
-					.outboundGateway(dsf, AbstractRemoteFileOutboundGateway.Command.PUT, "payload")
+					.outboundGateway(ftpRemoteFileTemplate, AbstractRemoteFileOutboundGateway.Command.PUT, "payload")
 					.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
-					.fileExistsMode(FileExistsMode.IGNORE)
-					.localDirectory(file)
+					.fileExistsMode(FileExistsMode.IGNORE )
 			)
 			.handle((GenericHandler<Object>) (payload, headers) -> {
 				dsf.clearThreadKey();
-				return payload;
-			})
-			.channel(out());
+				return null;
+			});
+	}
+
+	@Bean
+	FtpRemoteFileTemplate template(DelegatingSessionFactory dsf) {
+		FtpRemoteFileTemplate template = new FtpRemoteFileTemplate(dsf);
+		template.setRemoteDirectoryExpression(new LiteralExpression(""));
+		return template;
 	}
 
 	@Bean
