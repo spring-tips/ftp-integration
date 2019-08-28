@@ -98,7 +98,7 @@ class DelegatingSessionFactoryOutboundFlowConfiguration {
 				Ftp
 					.outboundGateway(ftpRemoteFileTemplate, AbstractRemoteFileOutboundGateway.Command.PUT, "payload")
 					.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
-					.fileExistsMode(FileExistsMode.IGNORE )
+					.fileExistsMode(FileExistsMode.IGNORE)
 			)
 			.handle((GenericHandler<Object>) (payload, headers) -> {
 				dsf.clearThreadKey();
