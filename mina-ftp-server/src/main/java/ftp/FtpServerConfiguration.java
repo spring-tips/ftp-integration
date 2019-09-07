@@ -5,6 +5,7 @@ import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.filesystem.nativefs.NativeFileSystemFactory;
 import org.apache.ftpserver.ftplet.FileSystemFactory;
 import org.apache.ftpserver.ftplet.FtpException;
+import org.apache.ftpserver.ftplet.Ftplet;
 import org.apache.ftpserver.ftplet.UserManager;
 import org.apache.ftpserver.listener.Listener;
 import org.apache.ftpserver.listener.ListenerFactory;
@@ -24,6 +25,12 @@ import java.util.Map;
 @Configuration
 class FtpServerConfiguration {
 
+	private final Map<String, Ftplet> ftpletMap;
+
+	FtpServerConfiguration(Map<String, Ftplet> ftpletMap) {
+		this.ftpletMap = ftpletMap;
+	}
+
 	@Bean
 	FileSystemFactory fileSystemFactory() {
 		NativeFileSystemFactory fileSystemFactory = new NativeFileSystemFactory();
@@ -40,18 +47,15 @@ class FtpServerConfiguration {
 	}
 
 	@Bean
-	FtpServer ftpServer(UserManager userManager, Listener nioListener, FileSystemFactory fileSystemFactory) throws FtpException {
+	FtpServer ftpServer(
+		Map<String, Ftplet> ftplets,
+		UserManager userManager, Listener nioListener, FileSystemFactory fileSystemFactory) throws FtpException {
 		FtpServerFactory ftpServerFactory = new FtpServerFactory();
 		ftpServerFactory.setListeners(Collections.singletonMap("default", nioListener));
 		ftpServerFactory.setFileSystem(fileSystemFactory);
-		ftpServerFactory.setFtplets(Map.of("springFtplet", this.apacheMinaFtplet()));
+		ftpServerFactory.setFtplets(ftplets);
 		ftpServerFactory.setUserManager(userManager);
 		return ftpServerFactory.createServer();
-	}
-
-	@Bean
-	ApacheMinaFtplet apacheMinaFtplet() {
-		return new ApacheMinaFtplet();
 	}
 
 	@Bean

@@ -8,6 +8,7 @@ import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.MessageChannels;
 import org.springframework.integration.event.inbound.ApplicationEventListeningMessageProducer;
 import org.springframework.integration.ftp.server.ApacheMinaFtpEvent;
+import org.springframework.integration.ftp.server.ApacheMinaFtplet;
 import org.springframework.integration.handler.GenericHandler;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
@@ -15,6 +16,11 @@ import org.springframework.messaging.MessageHeaders;
 @Log4j2
 @Configuration
 class IntegrationConfiguration {
+
+	@Bean
+	ApacheMinaFtplet apacheMinaFtplet() {
+		return new ApacheMinaFtplet();
+	}
 
 	@Bean
 	MessageChannel eventsChannel() {
