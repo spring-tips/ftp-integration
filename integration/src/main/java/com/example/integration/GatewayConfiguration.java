@@ -4,6 +4,7 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.expression.common.LiteralExpression;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
@@ -28,6 +29,7 @@ import java.util.Map;
 import static org.springframework.web.servlet.function.RouterFunctions.route;
 
 @Configuration
+@Profile("gateway")
 class GatewayConfiguration {
 
 	@Bean
@@ -58,7 +60,7 @@ class GatewayConfiguration {
 
 	@Bean
 	IntegrationFlow gateway(FtpRemoteFileTemplate template,
-	                        DelegatingSessionFactory<FTPFile> dsf) {
+																									DelegatingSessionFactory<FTPFile> dsf) {
 		return f -> f
 			.channel(incoming())
 			.handle((GenericHandler<Object>) (key, messageHeaders) -> {
@@ -86,17 +88,17 @@ class GatewayConfiguration {
 
 	@Bean
 	DefaultFtpSessionFactory gary(@Value("${ftp2.username}") String username,
-	                              @Value("${ftp2.password}") String pw,
-	                              @Value("${ftp2.host}") String host,
-	                              @Value("${ftp2.port}") int port) {
+																															@Value("${ftp2.password}") String pw,
+																															@Value("${ftp2.host}") String host,
+																															@Value("${ftp2.port}") int port) {
 		return this.createSessionFactory(username, pw, host, port);
 	}
 
 	@Bean
 	DefaultFtpSessionFactory josh(@Value("${ftp1.username}") String username,
-	                              @Value("${ftp1.password}") String pw,
-	                              @Value("${ftp1.host}") String host,
-	                              @Value("${ftp1.port}") int port) {
+																															@Value("${ftp1.password}") String pw,
+																															@Value("${ftp1.host}") String host,
+																															@Value("${ftp1.port}") int port) {
 		return this.createSessionFactory(username, pw, host, port);
 	}
 
