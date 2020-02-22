@@ -11,6 +11,7 @@ import org.apache.ftpserver.listener.Listener;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,17 +20,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.Assert;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Configuration
 class FtpServerConfiguration {
-
-	private final Map<String, Ftplet> ftpletMap;
-
-	FtpServerConfiguration(Map<String, Ftplet> ftpletMap) {
-		this.ftpletMap = ftpletMap;
-	}
 
 	@Bean
 	FileSystemFactory fileSystemFactory() {
@@ -46,14 +43,21 @@ class FtpServerConfiguration {
 		return listenerFactory.createListener();
 	}
 
+	private Map<String, Ftplet> mapOfFtplets(Ftplet[] ftplets) {
+		return Arrays.stream(ftplets).collect(Collectors.toMap(x -> x.getClass().getName(), x -> x));
+	}
+
 	@Bean
-	FtpServer ftpServer(
-		Map<String, Ftplet> ftplets,
-		UserManager userManager, Listener nioListener, FileSystemFactory fileSystemFactory) throws FtpException {
+	FtpServer ftpServer(ObjectFactory<Ftplet> ftplet,
+																					UserManager userManager, Listener nioListener, FileSystemFactory fileSystemFactory) {
+
+		Ftplet object = ftplet.getObject();
+		Assert.notNull(object, "the ftplet can't be null!");
+		var ftpletMap = mapOfFtplets(new Ftplet[]{object});
 		FtpServerFactory ftpServerFactory = new FtpServerFactory();
 		ftpServerFactory.setListeners(Collections.singletonMap("default", nioListener));
 		ftpServerFactory.setFileSystem(fileSystemFactory);
-		ftpServerFactory.setFtplets(ftplets);
+		ftpServerFactory.setFtplets(ftpletMap);
 		ftpServerFactory.setUserManager(userManager);
 		return ftpServerFactory.createServer();
 	}
