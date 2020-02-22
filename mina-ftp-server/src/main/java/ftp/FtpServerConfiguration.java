@@ -12,6 +12,7 @@ import org.apache.ftpserver.listener.ListenerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,12 +49,10 @@ class FtpServerConfiguration {
 	}
 
 	@Bean
-	FtpServer ftpServer(ObjectFactory<Ftplet> ftplet,
+	FtpServer ftpServer(ObjectProvider<Ftplet> ftplet,
 																					UserManager userManager, Listener nioListener, FileSystemFactory fileSystemFactory) {
 
-		Ftplet object = ftplet.getObject();
-		Assert.notNull(object, "the ftplet can't be null!");
-		var ftpletMap = mapOfFtplets(new Ftplet[]{object});
+		var ftpletMap = mapOfFtplets(new Ftplet[]{ftplet.getObject()});
 		FtpServerFactory ftpServerFactory = new FtpServerFactory();
 		ftpServerFactory.setListeners(Collections.singletonMap("default", nioListener));
 		ftpServerFactory.setFileSystem(fileSystemFactory);
