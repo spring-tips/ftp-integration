@@ -115,7 +115,7 @@ class FtpUserManager implements UserManager {
 	}
 
 	@Override
-	public boolean isAdmin(String s) throws FtpException {
+	public boolean isAdmin(String s) {
 		return getAdminName().equalsIgnoreCase(s);
 	}
 }
