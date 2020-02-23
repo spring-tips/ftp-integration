@@ -46,9 +46,11 @@ class FtpServerConfiguration {
 	}
 
 	@Bean
-	FtpServer ftpServer(ObjectProvider<Ftplet> ftplet,
-																					UserManager userManager, Listener nioListener, FileSystemFactory fileSystemFactory) {
-
+	FtpServer ftpServer(
+		ObjectProvider<Ftplet> ftplet,
+		UserManager userManager,
+		Listener nioListener,
+		FileSystemFactory fileSystemFactory) {
 		var ftpletMap = mapOfFtplets(new Ftplet[]{ftplet.getObject()});
 		FtpServerFactory ftpServerFactory = new FtpServerFactory();
 		ftpServerFactory.setListeners(Collections.singletonMap("default", nioListener));
