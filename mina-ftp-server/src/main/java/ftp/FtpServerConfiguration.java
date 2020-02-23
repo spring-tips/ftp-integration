@@ -1,5 +1,6 @@
 package ftp;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.filesystem.nativefs.NativeFileSystemFactory;
@@ -10,7 +11,6 @@ import org.apache.ftpserver.listener.Listener;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Log4j2
 @Configuration
 class FtpServerConfiguration {
 
@@ -41,17 +42,8 @@ class FtpServerConfiguration {
 		return listenerFactory.createListener();
 	}
 
-	private Map<String, Ftplet> mapOfFtplets(Ftplet[] ftplets) {
-		return Arrays.stream(ftplets).collect(Collectors.toMap(x -> x.getClass().getName(), x -> x));
-	}
-
 	@Bean
-	FtpServer ftpServer(
-		ObjectProvider<Ftplet> ftplet,
-		UserManager userManager,
-		Listener nioListener,
-		FileSystemFactory fileSystemFactory) {
-		var ftpletMap = mapOfFtplets(new Ftplet[]{ftplet.getObject()});
+	FtpServer ftpServer(Map<String, Ftplet> ftpletMap, UserManager userManager, Listener nioListener, FileSystemFactory fileSystemFactory) {
 		FtpServerFactory ftpServerFactory = new FtpServerFactory();
 		ftpServerFactory.setListeners(Collections.singletonMap("default", nioListener));
 		ftpServerFactory.setFileSystem(fileSystemFactory);
