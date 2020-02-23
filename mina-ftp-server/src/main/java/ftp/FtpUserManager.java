@@ -105,8 +105,11 @@ class FtpUserManager implements UserManager {
 			.orElseThrow(() -> new AuthenticationFailedException("Authentication has failed! Try your username and password."));
 	}
 
+	/**
+		* TODO do something more responsible than this!
+		*/
 	private String encode(String pw) {
-		return pw; //todo
+		return pw;
 	}
 
 	@Override
