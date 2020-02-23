@@ -1,4 +1,4 @@
-# FTP Integration 
+# Spring Tips: FTP Integration 
 
 Hi, Spring fans! In this installment of Spring Tips, we look at a topic that's near and dear to my heart: integration! And yes, you may recall that the very first installment of _Spring Tips_ looked at Spring Integration. If you haven't already watched that one, [you should](https://www.youtube.com/watch?v=MTKlk8_9aAw&list=PLgGXSWYM2FpPw8rV0tZoMiJYSCiLhPnOc&index=69). So, while we're not going to revisit Spring Integration fundamentals, we're going to take a deep dive into one area fo support in Spring Integration: FTP. FTP is all about file synchronization. Broadly, in the world of Enterprise Application Integration (EAI), we have four types of integration: file synchronization, RPC, database synchronization, and messaging. 
 
