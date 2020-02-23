@@ -32,7 +32,6 @@ class FtpUserManager implements UserManager {
 		new ConcurrentLoginPermission(20, 2),
 		new TransferRatePermission(4800, 4800));
 
-	// SQL
 	private final String insertSql = "insert into ftp_user (username, password, enabled, admin) values (?,?,?,?)";
 	private final String selectUsernamesSql = "select distinct username from ftp_user";
 	private final String deleteByNameSql = "delete from ftp_user where username = ? ";
@@ -69,13 +68,13 @@ class FtpUserManager implements UserManager {
 	}
 
 	@Override
-	public String[] getAllUserNames() throws FtpException {
+	public String[] getAllUserNames() {
 		List<String> userNames = this.jdbcTemplate.query(this.selectUsernamesSql, this.usernameRowMapper);
 		return userNames.toArray(new String[0]);
 	}
 
 	@Override
-	public void delete(String name) throws FtpException {
+	public void delete(String name) {
 		int update = this.jdbcTemplate.update(this.deleteByNameSql, name);
 		Assert.isTrue(update > -1, "there must be some acknowledgment");
 	}
@@ -111,7 +110,7 @@ class FtpUserManager implements UserManager {
 	}
 
 	@Override
-	public String getAdminName() throws FtpException {
+	public String getAdminName() {
 		return "admin";
 	}
 
