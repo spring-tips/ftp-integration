@@ -8,6 +8,7 @@ Please indulge me in a bit of chest-thumping here: I thought that I knew everyth
 
 So, first things first: we need to setup an FTP server. Most of Spring Integration's support works as a client to an already installed FTP server. So, it doesn't matter what FTP server you use. However, I'd recommend you use the [Apache FTPServer project](https://mina.apache.org/ftpserver-project/). It's a project that's a sub-project of the Apache Mina project, which is,  just so you know, the precursor to the Netty project. The Apache FTP Server is a super scalable, lightweight, all-Java implementation of the FTP protocol. And, you can easily embed it inside a Spring application. I've done so in the [Github repository for this video](http://github.com/spring-tips/ftp-integration). I defined a custom `UserManager` class to manage FTP user acounts. The custom `UserManager` that talks to a local PostgreSQL database with a simple table `ftp_user`, whose schema is defined thusly:
 
+<!--
 ```sql
 create table if not exists ftp_user(
     id serial primary key,
@@ -17,6 +18,9 @@ create table if not exists ftp_user(
     admin bool default false
 );
 ```
+-->
+
+<img src = "images/schema.png"/>
 
 I've got two users in there, `jlong` and `grussell`, both of which have a password of `pw`. I've set `enabled` and `admin` to `true` for both records. We use these two accounts later, so make sure you insert them into the table, like this. 
 
